@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<design>
+    <page>
+        <format>a4</format>
+        <orientation>C</orientation>
+    </page>
+
+    <text id="1">
+        <class>Text</class>
+        <x>390</x>
+        <y>45</y>
+        <font>Times</font>
+        <size>26</size>
+        <text>&lt;i&gt;Recibo&lt;/i&gt;</text>
+        <color>#3A368C</color>
+        <shadowoffset>2</shadowoffset>
+        <shadowcolor>#C5C5C5</shadowcolor>
+    </text>
+
+    <text id="2">
+        <class>Text</class>
+        <x>500</x>
+        <y>150</y>
+        <font>Times</font>
+        <size>12</size>
+        <text>NATAL, 12 de Abril de 2022.</text>
+        <color>#000000</color>
+        <shadowoffset>0</shadowoffset>
+        <shadowcolor>#000000</shadowcolor>
+    </text>
+
+    <text id="3">
+        <class>Text</class>
+        <x>206</x>
+        <y>200</y>
+        <font>Times</font>
+        <size>12</size>
+        <text>Recebemos de {name}, portador(a) do CPF 09467114453 a importância de&lt;br&gt;R$ 2.200,00 (Dois Mil e Duzentos Reais) referente ao pagamento de&lt;br&gt;parte do saldo residual da festa do dia 07.05.2022. </text>
+        <color>#000000</color>
+        <shadowoffset>0</shadowoffset>
+        <shadowcolor>#000000</shadowcolor>
+    </text>
+
+    <text id="4">
+        <class>Text</class>
+        <x>300</x>
+        <y>320</y>
+        <font>Times</font>
+        <size>20</size>
+        <text>___________________________</text>
+        <color>#3A368C</color>
+        <shadowoffset>2</shadowoffset>
+        <shadowcolor>#C5C5C5</shadowcolor>
+    </text>
+
+    <text id="5">
+        <class>Text</class>
+        <x>345</x>
+        <y>345</y>
+        <font>Times</font>
+        <size>12</size>
+        <text>&lt;b&gt;TIMTIM POR TIMTIM BUFFET&lt;/b&gt;</text>
+        <color>#000</color>
+        <shadowoffset>0</shadowoffset>
+    </text>
+
+    <text id="6">
+        <class>Text</class>
+        <x>367</x>
+        <y>357</y>
+        <font>Times</font>
+        <size>12</size>
+        <text>&lt;b&gt;(CNPJ 44.634.602/0001-20)&lt;/b&gt;</text>
+        <color>#000</color>
+        <shadowoffset>0</shadowoffset>
+    </text>
+
+    <text id="7">
+        <class>Text</class>
+        <x>290</x>
+        <y>520</y>
+        <font>Arial</font>
+        <size>8</size>
+        <text>Largo Interventor Ubaldo Bezerra, Nº1929, Candelária, Natal/RN - CEP 59064-620</text>
+        <color>#3A368C</color>
+        <shadowoffset>2</shadowoffset>
+        <shadowcolor>#C5C5C5</shadowcolor>
+    </text>
+
+    <text id="8">
+        <class>Text</class>
+        <x>360</x>
+        <y>530</y>
+        <font>Arial</font>
+        <size>8</size>
+        <text>E-mail: comercialcasacelebrar@gmail.com</text>
+        <color>#3A368C</color>
+        <shadowoffset>2</shadowoffset>
+        <shadowcolor>#C5C5C5</shadowcolor>Telefone: (8 4 ) 9 8 6 2 1 - 3 6 6 5 (WhatsApp)
+    </text>
+
+    <text id="8">
+        <class>Text</class>
+        <x>355</x>
+        <y>540</y>
+        <font>Arial</font>
+        <size>8</size>
+        <text>Telefone: (8 4 ) 9 8 6 2 1 - 3 6 6 5 (WhatsApp)</text>
+        <color>#3A368C</color>
+        <shadowoffset>2</shadowoffset>
+        <shadowcolor>#C5C5C5</shadowcolor>
+    </text>
+    
+</design>
