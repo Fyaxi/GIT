@@ -1,2 +1,0 @@
-# CASACELEBRAR
- Sistema Integrado
