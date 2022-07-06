@@ -29,7 +29,6 @@ class ReciboEvento extends TPage
         
         $this->form->addFields( [new TLabel('Evento', 'red')], [$name] );
         $this->form->addAction('Gerar Recibo', new TAction(array($this, 'onGenerate')), 'far:check-circle green');
-        $this->form->addActionLink('Novo Faturamento <b>(admin)</b>', new TAction(['FaturaForm', 'onEdit']), 'fa:plus green');
         
         $name->addValidation('Evento', new TRequiredValidator);
         

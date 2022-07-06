@@ -1,5 +1,11 @@
 /* Navbar ====================================== */
 @import url(materialize.css);
+.imagemDeFundo{
+  border: 1px solid black;
+  background: url('https://www.askideas.com/media/11/Evolution-Something-Went-Wrong-Funny-Computer.jpg') no-repeat; 
+  width: auto;
+  height: 400px;
+}
 .navbar {
   font-family: "Roboto", sans-serif;
   -webkit-border-radius: 0;
