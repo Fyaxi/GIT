@@ -1,4 +1,14 @@
 <?php
+/**
+ * ReciboEntradaView TSession::getValue('unit_database')
+ *
+ * @version    2.0
+ * @package    Sistema Integrado
+ * @subpackage Módulos
+ * @author     Jairo Barreto
+ * @copyright  Copyright (c) 2021 Nativus Tecnologia. (http://www.nativustecnologia.com.br)
+ * 
+ */
 class ReciboEntradaView extends TPage
 {
     private $html;
@@ -22,16 +32,9 @@ class ReciboEntradaView extends TPage
         $cliente->complemento = 'Apto 123';
         $cliente->cidade = 'Porto Alegre';
         
-        $entrega = new stdClass;
-        $entrega->nome = 'Jane da silva';
-        $entrega->endereco = 'Rua do pedrinho, 123';
-        $entrega->complemento = 'Apto 123';
-        $entrega->cidade = 'Porto Alegre';
-        
         $replaces = [];
         $replaces['fatura'] = $fatura;
         $replaces['cliente'] = $cliente;
-        $replaces['entrega'] = $entrega;
         
         $replaces['items'] = [
             [ 'id' => '001',
@@ -65,12 +68,81 @@ class ReciboEntradaView extends TPage
         
         parent::add($panel);
     }
+
+    public function onAbrir($param)
+    {
+        if (isset($param))
+        {
+            echo '<pre>';
+            print_r($param);
+            echo '</pre>';
+        }
+        //$selecao = new TSession::getValue(__CLASS__.'_selecao)
+        //$selecao = new TSession::setValue(__CLASS__.'_selecao, selecao)
+        $this->onReload($param);
+    }
+
+    public function onGerar($param)
+    {
+        if (isset($param))
+        {
+            echo '<pre>';
+            print_r($param);
+            echo '</pre>';
+        }
+        //$selecao = new TSession::getValue(__CLASS__.'_selecao)
+        //$selecao = new TSession::setValue(__CLASS__.'_selecao, selecao)
+        $this->onReload($param);
+    }
     
     public function onExportPDF($param)
     {
         try
         {
-            print_r($param);
+            $this->html = new THtmlRenderer('app/resources/fatura.html');
+        
+            $fatura = new stdClass;
+            $fatura->id = '13123123';
+            $fatura->dt_pedido = date('Y-m-d');
+            $fatura->metodo = 'Paypal';
+            $fatura->conta = 'john@email.com';
+            $fatura->frete = 1300;
+
+            $cliente = new stdClass;
+            $cliente->nome = 'Pedro da silva';
+            $cliente->endereco = 'Rua do pedrinho, 123';
+            $cliente->complemento = 'Apto 123';
+            $cliente->cidade = 'Porto Alegre';
+            
+            $replaces = [];
+            $replaces['fatura'] = $fatura;
+            $replaces['cliente'] = $cliente;
+            
+            $replaces['items'] = [
+                [ 'id' => '001',
+                'descricao' => 'COMBO FESTA NOITE',
+                'preco' => 3500,
+                'qtde' => 1
+                ],
+                [ 'id' => '002',
+                'descricao' => 'CONVIDADO ADICIONADO',
+                'preco' => 50,
+                'qtde' => 12
+                ],
+                [ 'id' => '003',
+                'descricao' => 'COMBO ADICIONAL SALGADINHOS',
+                'preco' => 350,
+                'qtde' => 1
+                ],
+                [ 'id' => '004',
+                'descricao' => 'PROJETO BALÕES',
+                'preco' => 350,
+                'qtde' => 2
+                ]
+            ];
+        
+            $this->html->enableSection('main', $replaces);
+
             // string with HTML contents
             $html = clone $this->html;
             $contents = file_get_contents('app/resources/styles-print.html') . $html->getContents();

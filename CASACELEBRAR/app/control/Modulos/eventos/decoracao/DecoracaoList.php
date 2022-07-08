@@ -183,12 +183,13 @@ class DecoracaoList extends TPage
         
         $action1 = new TDataGridAction(['DecoracaoForm', 'onEdit'], ['id'=>'{id}']);
         $action2 = new TDataGridAction([$this, 'onAgendar'], ['id'=>'{id}']);
-        //$action3 = new TDataGridAction([$this, 'onDelete'], ['id'=>'{id}']);
-        $action3 = new TDataGridAction([$this, 'onDeletarEvento'], ['id'=>'{id}']);
+        $action3 = new TDataGridAction([$this, 'onGerarRecibo'], ['id'=>'{id}']);
+        $action4 = new TDataGridAction([$this, 'onDeletarEvento'], ['id'=>'{id}']);
         
         $this->datagrid->addAction($action1, 'Editar Evento',   'far:edit blue');
         $this->datagrid->addAction($action2, 'Marcar/Desmarcar Evento', 'fa:calendar orange');
-        $this->datagrid->addAction($action3, 'Cancelar Evento', 'far:trash-alt red');
+        $this->datagrid->addAction($action3, 'Gerar Recibo',   'fa:file-invoice-dollar green');
+        $this->datagrid->addAction($action4, 'Cancelar Evento', 'far:trash-alt red');
         
         // create the datagrid model
         $this->datagrid->createModel();
@@ -298,6 +299,97 @@ class DecoracaoList extends TPage
 
             TTransaction::close();
             $this->onReload($param);
+        }
+        catch (Exception $e)
+        {
+            new TMessage('error', $e->getMessage());
+        }
+    }
+
+    public function onGerarRecibo($param)
+    {
+        try
+        {
+            $this->html = new THtmlRenderer('app/resources/relat/ReciboEntradaDecoracao.html');
+        
+            TTransaction::open(TSession::getValue('unit_database'));
+
+            $contrato = Decoracao::find($param['id']);
+            $pessoa = Pessoa::find($contrato->cliente_id);
+            $contrato_item = DecoracaoItem::where('contrato_id', '=', $param['key'])->load();   
+            
+            // Configurações GLOBAIS
+            $relatorio = new stdClass;
+            $relatorio->dt_atual = date('Y-m-d');
+
+            // Informações sobre o evento
+            $evento                 = new stdClass;
+            $evento->id             = $contrato->id;
+            $evento->data           = $contrato->dt_inicio;
+            $evento->valor_entrada  = $contrato->ValorEntrada;
+            $evento->valor_base     = $contrato->ValorContrato;
+
+            // Informações sobre os itens do evento
+            if ($contrato_item)
+            {
+                $relat_itens = array();
+                foreach($contrato_item as $item)
+                {
+                    array_push($relat_itens, array( 
+                        "id"        => $item->id, 
+                        "descricao" => $item->servico_id, 
+                        "preco"     => $item->valor, 
+                        "qtde"      => $item->quantidade
+                    ));
+                }
+            } 
+
+            // Informações sobre o cliente
+            $cliente                = new stdClass;
+            $cliente->nome          = $pessoa->nome_fantasia;
+            $cliente->cpf           = $pessoa->codigo_nacional;
+            
+            // Substituição das variáveis no html relatório
+            $replaces = []; 
+            $replaces['relatorio']  = $relatorio;
+            $replaces['evento']     = $evento;
+            $replaces['cliente']    = $cliente;
+            $replaces['items']      = $relat_itens;
+
+            //echo '<pre>';
+            //print_r($replaces);
+            //echo '</pre>';
+        
+            // Execução do replace
+            $this->html->enableSection('main', $replaces);
+
+            // string with HTML contents
+            $html = clone $this->html;
+            $contents = file_get_contents('app/resources/styles-print.html') . $html->getContents();
+
+            $options = new \Dompdf\Options();
+            $options->setChroot(getcwd());
+
+            // converts the HTML template into PDF
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($contents);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+            
+            $file = 'app/output/fatura.pdf';
+            
+            // write and open file
+            file_put_contents($file, $dompdf->output());
+            
+            $window = TWindow::create('Recibo Decoração', 0.8, 0.8);
+            $object = new TElement('object');
+            $object->data  = $file;
+            $object->type  = 'application/pdf';
+            $object->style = "width: 100%; height:calc(100% - 10px)";
+            $window->add($object);
+            $window->show();
+
+            TTransaction::close();
         }
         catch (Exception $e)
         {
