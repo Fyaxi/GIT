@@ -111,6 +111,10 @@
             <action>FormaPagamentoList</action>
             <icon>fas:money-bill-wave-alt fa-fw</icon>
           </menuitem>
+          <menuitem label="Contas Financeiras">
+            <action>ContaFinanceiraList</action>
+            <icon>fas:money-bill-alt fa-fw</icon>
+          </menuitem>
         </menu>
       </menuitem>
       <menuitem label="Eventos">
