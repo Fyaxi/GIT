@@ -102,7 +102,7 @@ class CalendarioForm extends TPage
         
         $this->form->addAction( _t('Save'),   new TAction(array($this, 'onSave')),   'fa:save green');
         $this->form->addAction( _t('Clear'),  new TAction(array($this, 'onEdit')),   'fa:eraser orange');
-        $this->form->addAction( _t('Delete'), new TAction(array($this, 'onDelete')), 'far:trash-alt red');
+        //$this->form->addAction( _t('Delete'), new TAction(array($this, 'onDelete')), 'far:trash-alt red');
         $this->form->addHeaderActionLink( _t('Close'), new TAction(array($this, 'onClose')), 'fa:times red');
         
         parent::add($this->form);

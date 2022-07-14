@@ -260,7 +260,7 @@ class ContratoList extends TPage
             TTransaction::open(TSession::getValue('unit_database'));
             $contrato = Contrato::find($param['id']);
 
-            if( $contrato->ativo == 'Y')
+            if($contrato->ativo == 'Y')
             {
                 if ($contrato instanceof Contrato)
                 {
@@ -286,17 +286,18 @@ class ContratoList extends TPage
                         $evento->festa_id  = $contrato->id;
                         $evento->system_user_id = TSession::getValue('userid');
                         $evento->store();
+                        TToast::show('success', 'Evento inserido na agenda de eventos!', 'top center', 'fas:window-close' );
                     }
                 }
                 else
                 {
                     Evento::where('festa_id', '=', $contrato->id)->delete();
-                }
+                    TToast::show('info', 'Evento removido da agenda de eventos!', 'top center', 'fas:window-close' );
+                }        
             }
             else
             {
-                $pos_action = new TAction(['ContratoList', 'onReload']);
-                new TMessage('danger', 'Não é possível agendar uma festa cancelada!', $pos_action);
+                TToast::show('error', 'Não é possível agendadar uma festa cancelada!', 'top center', 'fas:window-close' );
             }
 
             TTransaction::close();
@@ -316,25 +317,12 @@ class ContratoList extends TPage
         
             TTransaction::open(TSession::getValue('unit_database'));
 
-            $contrato = Contrato::find($param['id']);
-            $pessoa = Pessoa::find($contrato->cliente_id);
-            $contrato_item = ContratoItem::where('contrato_id', '=', $param['key'])->load();   
-            
-            // Configurações GLOBAIS
-            $relatorio = new stdClass;
-            $relatorio->dt_atual = date('Y-m-d');
-
-            // Informações sobre o evento
-            $evento                 = new stdClass;
-            $evento->id             = $contrato->id;
-            $evento->data           = $contrato->dt_inicio;
-            $evento->valor_entrada  = $contrato->ValorEntrada;
-            $evento->valor_base     = $contrato->ValorContrato;
+            $relat_itens    = array();
+            $contrato_item  = ContratoItem::where('contrato_id', '=', $param['key'])->load();  
 
             // Informações sobre os itens do evento
             if ($contrato_item)
             {
-                $relat_itens = array();
                 foreach($contrato_item as $item)
                 {
                     array_push($relat_itens, array( 
@@ -343,55 +331,77 @@ class ContratoList extends TPage
                         "preco"     => $item->valor, 
                         "qtde"      => $item->quantidade
                     ));
+                }    
+                
+                if(!empty($relat_itens))
+                {
+                    $contrato       = Contrato::find($param['id']);
+                    $pessoa         = Pessoa::find($contrato->cliente_id);
+
+                    // Configurações GLOBAIS
+                    $relatorio = new stdClass;
+                    $relatorio->dt_atual = date('Y-m-d');
+
+                    // Informações sobre o evento
+                    $evento                 = new stdClass;
+                    $evento->id             = $contrato->id;
+                    $evento->data           = $contrato->dt_inicio;
+                    $evento->valor_entrada  = $contrato->ValorEntrada;
+                    $evento->valor_base     = $contrato->ValorContrato;
+
+                    // Informações sobre o cliente
+                    $cliente                = new stdClass;
+                    $cliente->nome          = $pessoa->nome_fantasia;
+                    $cliente->cpf           = $pessoa->codigo_nacional;    
+
+                    // Substituição das variáveis no html relatório
+                    $replaces = []; 
+                    $replaces['relatorio']  = $relatorio;
+                    $replaces['evento']     = $evento;
+                    $replaces['cliente']    = $cliente;
+                    $replaces['items']      = $relat_itens;
+
+                    // Execução do replace
+                    // Replace pode ser utilizado para ativar sessões dentro do relatório
+                    $this->html->enableSection('main', $replaces);
+
+                    // string with HTML contents
+                    $html = clone $this->html;
+                    $contents = file_get_contents('app/resources/styles-print.html') . $html->getContents();
+
+                    $options = new \Dompdf\Options();
+                    $options->setChroot(getcwd());
+
+                    // converts the HTML template into PDF
+                    $dompdf = new \Dompdf\Dompdf($options);
+                    $dompdf->loadHtml($contents);
+                    $dompdf->setPaper('A4', 'portrait');
+                    $dompdf->render();
+                    
+                    $file = 'app/output/ReciboEntradaFesta_'.$contrato->id.'.pdf';
+                    
+                    // write and open file
+                    file_put_contents($file, $dompdf->output());
+                    
+                    $window = TWindow::create('Recibo', 0.8, 0.8);
+                    $object = new TElement('object');
+                    $object->data  = $file;
+                    $object->type  = 'application/pdf';
+                    $object->style = "width: 100%; height:calc(100% - 10px)";
+                    $window->add($object);
+                    $window->show();
                 }
-            } 
+                else
+                {
+                    TToast::show('error', 'Itens não listados no evento!', 'top right', 'far:check-circle' );
+                }
+            }
+            else
+            {
+                TToast::show('error', 'Itens não encontrados no evento!', 'top right', 'far:check-circle' );
+            }        
 
-            // Informações sobre o cliente
-            $cliente                = new stdClass;
-            $cliente->nome          = $pessoa->nome_fantasia;
-            $cliente->cpf           = $pessoa->codigo_nacional;
             
-            // Substituição das variáveis no html relatório
-            $replaces = []; 
-            $replaces['relatorio']  = $relatorio;
-            $replaces['evento']     = $evento;
-            $replaces['cliente']    = $cliente;
-            $replaces['items']      = $relat_itens;
-
-            //echo '<pre>';
-            //print_r($replaces);
-            //echo '</pre>';
-        
-            // Execução do replace
-            $this->html->enableSection('main', $replaces);
-
-            // string with HTML contents
-            $html = clone $this->html;
-            $contents = file_get_contents('app/resources/styles-print.html') . $html->getContents();
-
-            $options = new \Dompdf\Options();
-            $options->setChroot(getcwd());
-
-            // converts the HTML template into PDF
-            $dompdf = new \Dompdf\Dompdf($options);
-            $dompdf->loadHtml($contents);
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-
-            $n = rand(9, 99999999);
-            
-            $file = 'app/output/ReciboEntradaFesta_'.$contrato->id.'.pdf';
-            
-            // write and open file
-            file_put_contents($file, $dompdf->output());
-            
-            $window = TWindow::create('Recibo', 0.8, 0.8);
-            $object = new TElement('object');
-            $object->data  = $file;
-            $object->type  = 'application/pdf';
-            $object->style = "width: 100%; height:calc(100% - 10px)";
-            $window->add($object);
-            $window->show();
 
             TTransaction::close();
         }

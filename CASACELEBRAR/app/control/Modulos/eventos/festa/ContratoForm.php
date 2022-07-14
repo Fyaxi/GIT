@@ -45,9 +45,9 @@ class ContratoForm extends TWindow
         $agendado->addItems( ['Y' => 'Sim', 'N' => 'Não'] );
         $agendado->setLayout('horizontal');
         $agendado->setUseButton();
-        $ativo = new TRadioGroup('ativo');
-        $ativo->addItems( ['N' => 'Sim', 'Y' => 'Não'] );
-        $ativo->setLayout('horizontal');
+        //$ativo = new TRadioGroup('ativo');
+        //$ativo->addItems( ['N' => 'Sim', 'Y' => 'Não'] );
+        //$ativo->setLayout('horizontal');
         //$ativo->setUseButton();
         $dt_inicio = new TDate('dt_inicio');
         $dt_fim = new TDate('dt_fim');
@@ -89,8 +89,8 @@ class ContratoForm extends TWindow
         $dt_inicio->setSize('100%');
         $dt_fim->setSize('100%');
         $obs->setSize('100%', 70);
-        $agendado->setValue('Y');
-        $ativo->setValue('Y');
+        $agendado->setValue('N');
+        //$ativo->setValue('Y');
 
         $PagamentoEntrada->setSize('100%');
         $ValorEntrada->setSize('100%');
@@ -101,7 +101,7 @@ class ContratoForm extends TWindow
         $LoginVendedor->setEditable(FALSE);
         $IdVendedor->setEditable(FALSE);
         $valor->setEditable(FALSE);
-        $ativo->setEditable(FALSE);
+        //$ativo->setEditable(FALSE);
 
         $grupoUser = TSession::getValue('usergroupids');
         if( $grupoUser['0'] > 0 ) // Visualização Admin
@@ -122,7 +122,7 @@ class ContratoForm extends TWindow
         $cliente_id->setSize('100%');
         $tipo_contrato_id->setSize('100%');
         $agendado->setSize('100%');
-        $ativo->setSize('100%');
+        //$ativo->setSize('100%');
         $dt_inicio->setSize('100%');
         $dt_fim->setSize('100%');
         $id->setEditable(FALSE);
@@ -145,9 +145,8 @@ class ContratoForm extends TWindow
 
         $row = $this->form->addFields( [ new TLabel('<br>Nº'),     $id ],
                                        [ new TLabel('<br>Cliente'),    $cliente_id ],
-                                       [ new TLabel('<br>Gerar reserva?'), $agendado],
-                                       [ new TLabel('<br>Cancelado?'), $ativo] );
-        $row->layout = ['col-sm-1', 'col-sm-5', 'col-sm-3', 'col-sm-3'];
+                                       [ new TLabel('<br>Gerar reserva?'), $agendado] );
+        $row->layout = ['col-sm-1', 'col-sm-9', 'col-sm-2'];
         
         $row = $this->form->addFields(  [ new TLabel('<br>Dt Inicio'), $dt_inicio],
                                         [ new TLabel('<br>Dt Fim'), $dt_fim],
@@ -419,7 +418,7 @@ class ContratoForm extends TWindow
             ///////////////////////////////////////////////////////////////
             if($param['agendado'] == 'Y')
             {
-                if($master->ativo == 'Y')
+                if($param['ativo'] == 'Y')
                 {
                     $evento_criado  = Evento::where('festa_id', '=', $master->id)->load();
                     //print_r($evento_criado);
@@ -433,20 +432,9 @@ class ContratoForm extends TWindow
                         $evento->descricao      = $master->obs;
                         $evento->inicio         = $master->dt_inicio;
                         $evento->fim            = $master->dt_fim;
-                        $evento->festa_id    = $master->id;
+                        $evento->festa_id       = $master->id;
                         $evento->system_user_id = TSession::getValue('userid'); // id usuário = login
                         $evento->store();
-
-                        $data = new stdClass;
-                        $data->id = $master->id;
-                        TForm::sendData('form_Contrato', $data);
-
-                        TScript::create(' $("select[name=\'tipo_contrato_id\'").prop("disabled", false); ');
-                        TScript::create(' $("select[name=\'cliente_id\'").prop("disabled", false); ');
-                        TScript::create(' $("select[name=\'PagamentoEntrada\'").prop("disabled", false); ');
-                        
-                        $pos_action = new TAction(['ContratoList', 'onReload']);
-                        new TMessage('info', 'Festa Salva!', $pos_action);
                     }
                 }
                 else
@@ -458,6 +446,17 @@ class ContratoForm extends TWindow
             {
                 Evento::where('festa_id', '=', $master->id)->delete();
             }
+
+            $data = new stdClass;
+            $data->id = $master->id;
+            TForm::sendData('form_Contrato', $data);
+
+            TScript::create(' $("select[name=\'tipo_contrato_id\'").prop("disabled", false); ');
+            TScript::create(' $("select[name=\'cliente_id\'").prop("disabled", false); ');
+            TScript::create(' $("select[name=\'PagamentoEntrada\'").prop("disabled", false); ');
+            
+            $pos_action = new TAction(['ContratoList', 'onReload']);
+            new TMessage('info', 'Evento Salva!', $pos_action);                
             ///////////////////////////////////////////////////////////////
             ///////////////////////////////////////////////////////////////
 
