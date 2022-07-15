@@ -26,7 +26,7 @@ class ServicoList extends TPage
     {
         parent::__construct();
         
-        $this->setDatabase(TSession::getValue('unit_database'));            // defines the database
+        $this->setDatabase('DBUNIDADE');            // defines the database
         $this->setActiveRecord('Servico');   // defines the active record
         $this->setDefaultOrder('id', 'asc');         // defines the default order
         $this->setLimit(10);
@@ -35,20 +35,23 @@ class ServicoList extends TPage
         $this->addFilterField('id', '=', 'id'); // filterField, operator, formField
         $this->addFilterField('nome', 'like', 'nome'); // filterField, operator, formField
         $this->addFilterField('tipo_servico_id', '=', 'tipo_servico_id'); // filterField, operator, formField
+        $this->addFilterField('tipo_favorecido_id', '=', 'tipo_favorecido_id'); // filterField, operator, formField
         $this->addFilterField('ativo', 'like', 'ativo'); // filterField, operator, formField
         
         // creates the form
         $this->form = new BootstrapFormBuilder('form_search_Servico');
-        $this->form->setFormTitle('Cadastro De Itens');
+        $this->form->setFormTitle('Cadastro de itens para festa');
         $this->form->enableCSRFProtection(); // ATIVA PROTEÇÃO CONTA EXECUÇÃO DE JAVA SCRIPT MALICIOSO
         
 
         // create the form fields
         $id = new TEntry('id');
         $nome = new TEntry('nome');
-        $tipo_servico_id = new TDBUniqueSearch('tipo_servico_id', TSession::getValue('unit_database'), 'TipoServico', 'id', 'nome');
+        $tipo_servico_id = new TDBUniqueSearch('tipo_servico_id', 'DBUNIDADE', 'TipoServico', 'id', 'nome');
+        $tipo_favorecido_id = new TDBUniqueSearch('tipo_favorecido_id', 'DBUNIDADE', 'Favorecido', 'id', 'nome');
         $ativo = new TRadioGroup('ativo');
         $tipo_servico_id->setMinLength(0);
+        $tipo_favorecido_id->setMinLength(0);
         
         $ativo->addItems( ['Y' => 'Sim', 'N' => 'Não', '' => 'Ambos'] );
         $ativo->setLayout('horizontal');
@@ -56,7 +59,8 @@ class ServicoList extends TPage
         // add the fields
         $this->form->addFields( [ new TLabel('N°') ], [ $id ] );
         $this->form->addFields( [ new TLabel('Nome') ], [ $nome ] );
-        $this->form->addFields( [ new TLabel('Tipo Item') ], [ $tipo_servico_id ] );
+        $this->form->addFields( [ new TLabel('Fornecedor') ], [ $tipo_favorecido_id ] );
+        $this->form->addFields( [ new TLabel('Grupo') ], [ $tipo_servico_id ] );
         $this->form->addFields( [ new TLabel('Ativo') ], [ $ativo ] );
 
 
@@ -64,20 +68,20 @@ class ServicoList extends TPage
         $id->setSize('100%');
         $nome->setSize('100%');
         $tipo_servico_id->setSize('100%');
+        $tipo_favorecido_id->setSize('100%');
         $ativo->setSize('100%');
 
         $nome->forceUpperCase();
 
-        $this->form->addExpandButton('Expandir' , 'fa:search', true);
+        //$this->form->addExpandButton('Expandir Menu' , 'fa:search', true);
 
-        
         // keep the form filled during navigation with session data
         $this->form->setData( TSession::getValue(__CLASS__.'_filter_data') );
         
         // add the search form actions
         $btn = $this->form->addAction(_t('Find'), new TAction([$this, 'onSearch']), 'fa:search');
         $btn->class = 'btn btn-sm btn-primary';
-        $this->form->addActionLink('Novo Item', new TAction(['ServicoForm', 'onEdit'], ['register_state' => 'false']), 'fa:plus green');
+        $this->form->addActionLink('Cadastrar Item', new TAction(['ServicoForm', 'onEdit'], ['register_state' => 'false']), 'fa:plus green');
         
         // creates a Datagrid
         $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
@@ -89,8 +93,9 @@ class ServicoList extends TPage
         // creates the datagrid columns
         //$column_id = new TDataGridColumn('id', 'N°', 'center', '10%');
         $column_nome = new TDataGridColumn('nome', 'Nome', 'left');
-        $column_tipo_servico_id = new TDataGridColumn('tipo_servico->nome', 'Item Tipo', 'left');
-        $column_valor = new TDataGridColumn('valor', 'Valor', 'right');
+        $column_tipo_favorecido_id = new TDataGridColumn('tipo_favorecido->nome', 'Fornecedor', 'left');
+        $column_tipo_servico_id = new TDataGridColumn('tipo_servico->nome', 'Grupo', 'center');
+        $column_valor = new TDataGridColumn('valor', 'Valor', 'center');
         $column_ativo = new TDataGridColumn('ativo', 'Ativo', 'left');
 
         //$column_id->setTransformer( function ($value, $object, $row) {
@@ -137,20 +142,22 @@ class ServicoList extends TPage
         // add the columns to the DataGrid
         //$this->datagrid->addColumn($column_id);
         $this->datagrid->addColumn($column_nome);
-        $this->datagrid->addColumn($column_tipo_servico_id);
+        $this->datagrid->addColumn($column_tipo_favorecido_id);
+        //$this->datagrid->addColumn($column_tipo_servico_id);
         $this->datagrid->addColumn($column_valor);
-        $this->datagrid->addColumn($column_ativo);
+        //$this->datagrid->addColumn($column_ativo);
         
         $column_valor->enableAutoHide(500);
-        $column_tipo_servico_id->enableAutoHide(500);
-        $column_ativo->enableAutoHide(500);
+        //$column_tipo_servico_id->enableAutoHide(500);
+        $column_tipo_favorecido_id->enableAutoHide(500);
+        //$column_ativo->enableAutoHide(500);
 
 
         // creates the datagrid column actions
         //$column_id->setAction(new TAction([$this, 'onReload']), ['order' => 'id']);
         $column_nome->setAction(new TAction([$this, 'onReload']), ['order' => 'nome']);
         $column_valor->setAction(new TAction([$this, 'onReload']), ['order' => 'valor']);
-        $column_ativo->setAction(new TAction([$this, 'onReload']), ['order' => 'ativo']);
+        //$column_ativo->setAction(new TAction([$this, 'onReload']), ['order' => 'ativo']);
 
         
         $action1 = new TDataGridAction(['ServicoForm', 'onEdit'], ['id'=>'{id}', 'register_state' => 'false']);

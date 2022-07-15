@@ -17,9 +17,12 @@ class Servico extends TRecord
     {
         parent::__construct($id, $callObjectLoad);
         parent::addAttribute('nome');
+        parent::addAttribute('nome_relatorio');
         parent::addAttribute('valor');
+        parent::addAttribute('valor_custo');
         parent::addAttribute('tipo_servico_id');
         parent::addAttribute('ativo');
+        parent::addAttribute('tipo_favorecido_id');
 
         parent::addAttribute('quantidade');
     }
@@ -27,6 +30,11 @@ class Servico extends TRecord
     public function get_tipo_servico()
     {
         return TipoServico::find($this->tipo_servico_id);
+    }
+
+    public function get_tipo_favorecido()
+    {
+        return Favorecido::find($this->tipo_favorecido_id);
     }
 
 }
